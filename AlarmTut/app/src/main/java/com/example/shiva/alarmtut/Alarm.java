@@ -24,19 +24,20 @@ public class Alarm extends BroadcastReceiver implements LocationListener {
 
     LocationManager locationManager;
     double longitudeGPS, latitudeGPS;
-
-
     Context context;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         this.context = context;
-        Toast.makeText(context, " internet", Toast.LENGTH_LONG).show();
-        Vibrator v = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
+        //Vibrator v = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
 
-        LogApp.logfile("ALARMA_CONEXION - Ubicacion: "
-                + " latitud: " + latitudeGPS + ", longitud: " + longitudeGPS);
-        v.vibrate(1000);
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TAG");
+        // acquire the lock
+        wl.acquire();
+
+        LogApp.logfile("ALARMA_CONEXION - Ubicacion: "+ " latitud: " + latitudeGPS + ", longitud: " + longitudeGPS);
+       // v.vibrate(1000);
         LogApp.logfile("ALARMA_CONEXION - " + getCurrentTimeStamp() + " -- Internet disponible: " + isNetDisponible());
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
@@ -47,9 +48,9 @@ public class Alarm extends BroadcastReceiver implements LocationListener {
         }
         locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 1000, 1, this);
 
-
+        // release the lock
+        wl.release();
     }
-
 
     private boolean isNetDisponible() {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -60,27 +61,25 @@ public class Alarm extends BroadcastReceiver implements LocationListener {
     public String getCurrentTimeStamp() {
         try {
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String currentTimeStamp = dateFormat.format(new Date()); // Find todays date
-
-            return currentTimeStamp;
+            Calendar now = Calendar.getInstance();
+            DateFormat formatter = SimpleDateFormat.getTimeInstance();
+            return formatter.format(now.getTime());
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-
     @Override
     public void onLocationChanged(Location location) {
         longitudeGPS=location.getLongitude();
         latitudeGPS=location.getLongitude();
         Toast.makeText(context, " GPS", Toast.LENGTH_LONG).show();
-        Vibrator v = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
+        //Vibrator v = (Vibrator) context.getSystemService(context.VIBRATOR_SERVICE);
 
         LogApp.logfile("ALARMA_CONEXION - Ubicacion: "
                 + " latitud: " + latitudeGPS + ", longitud: " + longitudeGPS);
-        v.vibrate(1000);
+       // v.vibrate(1000);
     }
 
     @Override
