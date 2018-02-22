@@ -68,23 +68,27 @@ public class MainActivity2 extends AppCompatActivity {
                     }
                 }
                 LogApp.logfile("ALARMA_CONEXION - presiono boton para activar alarma");
-
+                btnSet.setText("alarma activada");
              try {
-                    int time            =   20;
+
+                 long delay = TimeUnit.MINUTES.toMillis(3L); //5 minutos
+                 long time = System.currentTimeMillis() + delay; // tiempo actual + los 5min
                     Intent intent       =   new Intent(MainActivity2.this, Alarm.class);
-                    PendingIntent p1    =   PendingIntent.getBroadcast(getApplicationContext(),0, intent,PendingIntent.FLAG_CANCEL_CURRENT);
-                 AlarmManager am     =   (AlarmManager)getSystemService(ALARM_SERVICE);
-                 // a.set(AlarmManager.RTC,System.currentTimeMillis() + time*1000,p1);
-                    //Toast.makeText(getApplicationContext(),"Alarm set in "+time+"seconds",Toast.LENGTH_LONG).show();
+                    PendingIntent p1    =   PendingIntent.getBroadcast(getApplicationContext(),0, intent,0);
+                    AlarmManager am     =   (AlarmManager)getSystemService(ALARM_SERVICE);
 
-                    Calendar updateTime = Calendar.getInstance();
-                    updateTime.set(Calendar.SECOND, time);
-                    am.cancel(p1);
-                    am.setInexactRepeating(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), 1000 * time, p1); //will run it after every 5 seconds.
+                 //verificar las versiones para activar alarma
+                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                     // Wakes up the device in Doze Mode
+                     am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time, p1);
+                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                     // Wakes up the device in Idle Mode
+                     am.setExact(AlarmManager.RTC_WAKEUP, time, p1);
+                 } else {
+                     // Old APIs
+                     am.set(AlarmManager.RTC_WAKEUP, time, p1); }
 
-                }catch (NumberFormatException e){
-
-                }
+                }catch (NumberFormatException e){ }
 
             }
         });
